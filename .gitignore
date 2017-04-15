@@ -97,7 +97,4 @@ ENV/
 
 .gitignore
 .idea/
-core.py
-core.pyc
-itchat.pkl
-wechat.py
+/itchat.pkl
