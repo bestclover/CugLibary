@@ -178,10 +178,8 @@ num_re = re.compile('[0-9]{10}')
 @itchat.msg_register(itchat.content.TEXT)
 def text_reply(msg):
     user_id = msg.user.alias
-
     text = msg.text
     args = text.split()
-    print args, user_id
     try:
         if args[0] == u'记得保存信息哟':
             save_info()
