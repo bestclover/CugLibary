@@ -216,6 +216,6 @@ try:
     f.close()
 except:
     pass
-itchat.auto_login(enableCmdQR=True, hotReload=True)
+itchat.auto_login(enableCmdQR=-1, hotReload=True)
 threading._start_new_thread(auto_check, ())
 itchat.run()
