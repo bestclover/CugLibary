@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import itchat, pprint, psycopg2, re, time, threading
-import core
-
+import core,json
+"""
 user_info = {
     # username : [bookid,bookid]
 }
@@ -18,7 +18,7 @@ book_info = {
     # }
     #
 }
-
+"""
 
 def get_info(book_id):
     book = core.book_info(book_id)
@@ -49,11 +49,24 @@ def remove_book(book_id):
 
 def auto_check():
     while True:
+        save_info()
         print time.ctime(), 'auto-check begin'
         for x in book_info.keys():
-            get_info(x)
+            if book_info[x]['user'].__len__()!=0:
+                get_info(x)
         print time.ctime(), 'auto-check end'
         time.sleep(60 * 60)
+
+
+def save_info():
+    f = open('user.json', 'w+')
+    f.write(json.dumps(user_info))
+    f.flush()
+    f.close()
+    f = open('book.json', 'w+')
+    f.write(json.dumps(book_info))
+    f.flush()
+    f.close()
 
 
 def search_book(user, args):
@@ -73,20 +86,25 @@ def search_book(user, args):
 
 def add_listen(user, args):
     if args.__len__() > 1:
-        book_id = args[1]
-        if user not in user_info:
-            user_info[user] = []
-        if book_id in user_info[user]:
-            return u'你已经预约了这本书了'
-        book = get_info(book_id)
-        if book is None:
-            return u'没有这本书'
-        if book['can'] > 0:
-            return u'不用预约哟，%s 这本书现在就可以借' % book['title']
-        user_info[user].append(book_id)
-        book_info[book_id]['user'].append(user)
-        return u'%s\n添加了哟，如果可以借了的话，就会立即通知您的' % (book['title'])
-    return u'请给我书的id好吗'
+        for i in range(1,args.__len__()):
+            book_id = args[i]
+            if user not in user_info:
+                user_info[user] = []
+            if book_id in user_info[user]:
+                yield u'你已经预约了 %s-%s 这本书了'%(book_id,book_info[book_id]['info']['title'])
+                continue
+            book = get_info(book_id)
+            if book is None:
+                yield u'没有 %s 这本书'%book_id
+                continue
+            if book['can'] > 0:
+                yield u'不用预约哟，%s 这本书现在就可以借' % book['title']
+                continue
+            user_info[user].append(book_id)
+            book_info[book_id]['user'].append(user)
+            yield u'%s\n添加了哟，如果可以借了的话，就会立即通知您的' % (book['title'])
+    else:
+        yield u'请给我书的id好吗'
 
 
 def get_book_info(user, args):
@@ -98,28 +116,35 @@ def get_book_info(user, args):
             if book is None:
                 return u'骗人的，没有这本书'
         book = book_info[book_id]['info']
-        return [book['all_info'], book['leave']]
+        return [book['all_info'], u'可借' if book['leave']> 0 else u'不可借']
     return u'请给我书的id好吗'
 
 
 def remove_listen(user, args):
-    if args.__len__() > 1:
-        book_id = args[1]
-        if user not in user_info:
-            user_info[user] = []
-        if book_id in user_info[user]:
-            user_info[user].remove(book_id)
-            book_info[book_id]['user'].remove(user)
-            return u'好耶，已经取消了'
-        else:
-            return u'您没有预约这本书呢'
+    if args.__len__() <= 1:
+        yield u'请给我书的id好吗'
+    else:
+        for i in range(1,args.__len__()):
+            book_id = args[i]
+            if user not in user_info:
+                user_info[user] = []
+            if book_id in user_info[user]:
+                user_info[user].remove(book_id)
+                book_info[book_id]['user'].remove(user)
+                yield u'好耶，已经取消 %s-%s 的预约了'%(book_id,book_info[book_id]['info']['title'])
+                continue
+            else:
+                yield u'您没有预约 %s 这本书呢'%book_id
+                continue
 
-    return u'请给我书的id好吗'
 
 
 def show_list(user, args):
+    result=[]
     if user in user_info and user_info[user].__len__() is not 0:
-        return u'\n'.join(user_info[user])
+        for book_id in user_info[user]:
+            result.append('%s %s'%(book_id,book_info[book_id]['info']['title']))
+        return result
     return u'没有任何预约信息'
 
 
@@ -152,14 +177,16 @@ num_re = re.compile('[0-9]{10}')
 
 @itchat.msg_register(itchat.content.TEXT)
 def text_reply(msg):
-    user_id = msg.fromUserName
+    user_id = msg.user.alias
+
     text = msg.text
     args = text.split()
     print args, user_id
     try:
-        if user_id == '@c3639b13269993d6f416be6258720ea5d2dbd8e7831193a6dcecf0135d81023a':
-            if args[0] == u'上架':
-                remove_book(args[1])
+        if args[0] == u'记得保存信息哟':
+            save_info()
+            msg.user.send(u'还用你提醒吗？')
+            return
     except:
         pass
     if args.__len__() is not 0:
@@ -178,8 +205,17 @@ def text_reply(msg):
 def has_book(bookid):
     res = get_book_info(bookid)
     return res is not None
-
-
+try:
+    f=open('user.json','r+')
+    user_info=json.loads(f.read())
+    f.flush()
+    f.close()
+    f=open('book.json','r+')
+    book_info=json.loads(f.read())
+    f.flush()
+    f.close()
+except:
+    pass
 itchat.auto_login(enableCmdQR=False, hotReload=True)
 threading._start_new_thread(auto_check, ())
 itchat.run()

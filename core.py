@@ -18,8 +18,8 @@ def search_book(book_name, count=10):
         for x in response.xpath("//*[@class='book_list_info']"):
             name = '.'.join(x.xpath(".//a[@target='_blank']/text()").extract_first().split('.')[1:])
             id = x.xpath(".//a[@target='_blank']/@href").extract_first().split('=')[-1]
-            book = int(x.xpath("./p/span/text()[2]").extract_first().split(u'：')[-1])
-            result.append(u'%s %s 可借%d' % (name, id, book))
+            book = ''.join(x.xpath("./p/span/text()[2]").extract_first().split())
+            result.append(u'%s %s %s' % (name, id, book))
     if result.__len__() > count:
         return result[:count]
     else:
