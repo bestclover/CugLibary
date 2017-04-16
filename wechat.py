@@ -203,7 +203,7 @@ try:
     book_info = json.loads(f.read())
     f.flush()
     f.close()
-    f = open ('README.md','r')
+    f = open ('README.txt','r')
     help_info=f.read().decode('utf-8')
     f.flush()
     f.close()
