@@ -163,26 +163,32 @@ commands = {
 }
 num_re = re.compile('[0-9]{10}')
 
+
 @itchat.msg_register(itchat.content.FRIENDS)
 def add_friend(msg):
     msg.user.verify()
     msg.user.send(help())
 
+
 @itchat.msg_register(itchat.content.TEXT, isGroupChat=True)
 def group_reply(msg):
     if msg.isAt:
-        msg.user.send(u'@%s\u2005I received: %s' % (
-            msg.actualNickName, all_reply(msg)))
+        user_id = itchat.search_friends(userName=msg.actualUserName).alias
+        text = msg.text
+        args = text.split()
+        msg.user.send(u'@%s\n%s' % (
+            msg.actualNickName, all_reply(user_id, args[1:])))
 
 
 @itchat.msg_register(itchat.content.TEXT)
 def text_reply(msg):
-    msg.user.send(all_reply(msg))
-
-def all_reply(msg):
     user_id = msg.user.alias
     text = msg.text
     args = text.split()
+    msg.user.send(all_reply(user_id, args))
+
+
+def all_reply(user_id, args):
     try:
         if args[0] == u'记得保存信息哟':
             save_info()
@@ -201,11 +207,13 @@ def all_reply(msg):
     else:
         return u'你输入了什么呀，风太大我看不懂'
 
+
 def has_book(bookid):
     res = get_book_info(bookid)
     return res is not None
 
-user_info=book_info=help_info=None
+
+user_info = book_info = help_info = None
 try:
     f = open('user.json', 'r+')
     user_info = json.loads(f.read())
@@ -215,8 +223,8 @@ try:
     book_info = json.loads(f.read())
     f.flush()
     f.close()
-    f = open ('README.txt','r')
-    help_info=f.read().decode('utf-8')
+    f = open('README.txt', 'r')
+    help_info = f.read().decode('utf-8')
     f.flush()
     f.close()
 except:
