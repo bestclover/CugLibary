@@ -2,6 +2,7 @@
 
 ## 信息
 基于 itchat 实现的一个中国地质大学图书馆微信小助手。
+[项目github链接](https://github.com/xudaashuai/CugLibary),详细的使用文档可以在github上看见。
 
 ## 功能
 
