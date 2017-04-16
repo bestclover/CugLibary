@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import itchat, re, time, threading
-import core,json
+import core, json
+
 """
 user_info = {
     # username : [bookid,bookid]
@@ -19,6 +20,7 @@ book_info = {
     #
 }
 """
+
 
 def get_info(book_id):
     book = core.book_info(book_id)
@@ -52,7 +54,7 @@ def auto_check():
         save_info()
         print time.ctime(), 'auto-check begin'
         for x in book_info.keys():
-            if book_info[x]['user'].__len__()!=0:
+            if book_info[x]['user'].__len__() != 0:
                 get_info(x)
         print time.ctime(), 'auto-check end'
         time.sleep(60 * 60)
@@ -86,16 +88,16 @@ def search_book(user, args):
 
 def add_listen(user, args):
     if args.__len__() > 1:
-        for i in range(1,args.__len__()):
+        for i in range(1, args.__len__()):
             book_id = args[i]
             if user not in user_info:
                 user_info[user] = []
             if book_id in user_info[user]:
-                yield u'你已经预约了 %s-%s 这本书了'%(book_id,book_info[book_id]['info']['title'])
+                yield u'你已经预约了 %s-%s 这本书了' % (book_id, book_info[book_id]['info']['title'])
                 continue
             book = get_info(book_id)
             if book is None:
-                yield u'没有 %s 这本书'%book_id
+                yield u'没有 %s 这本书' % book_id
                 continue
             if book['can'] > 0:
                 yield u'不用预约哟，%s 这本书现在就可以借' % book['title']
@@ -116,7 +118,7 @@ def get_book_info(user, args):
             if book is None:
                 return u'骗人的，没有这本书'
         book = book_info[book_id]['info']
-        return [book['all_info'], u'可借' if book['leave']> 0 else u'不可借']
+        return [book['all_info'], u'可借' if book['leave'] > 0 else u'不可借']
     return u'请给我书的id好吗'
 
 
@@ -124,26 +126,25 @@ def remove_listen(user, args):
     if args.__len__() <= 1:
         yield u'请给我书的id好吗'
     else:
-        for i in range(1,args.__len__()):
+        for i in range(1, args.__len__()):
             book_id = args[i]
             if user not in user_info:
                 user_info[user] = []
             if book_id in user_info[user]:
                 user_info[user].remove(book_id)
                 book_info[book_id]['user'].remove(user)
-                yield u'好耶，已经取消 %s-%s 的预约了'%(book_id,book_info[book_id]['info']['title'])
+                yield u'好耶，已经取消 %s-%s 的预约了' % (book_id, book_info[book_id]['info']['title'])
                 continue
             else:
-                yield u'您没有预约 %s 这本书呢'%book_id
+                yield u'您没有预约 %s 这本书呢' % book_id
                 continue
-
 
 
 def show_list(user, args):
-    result=[]
+    result = []
     if user in user_info and user_info[user].__len__() is not 0:
         for book_id in user_info[user]:
-            result.append('%s %s'%(book_id,book_info[book_id]['info']['title']))
+            result.append('%s %s' % (book_id, book_info[book_id]['info']['title']))
         return result
     return u'没有任何预约信息'
 
@@ -203,13 +204,15 @@ def text_reply(msg):
 def has_book(bookid):
     res = get_book_info(bookid)
     return res is not None
+
+
 try:
-    f=open('user.json','r+')
-    user_info=json.loads(f.read())
+    f = open('user.json', 'r+')
+    user_info = json.loads(f.read())
     f.flush()
     f.close()
-    f=open('book.json','r+')
-    book_info=json.loads(f.read())
+    f = open('book.json', 'r+')
+    book_info = json.loads(f.read())
     f.flush()
     f.close()
 except:
