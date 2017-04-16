@@ -150,19 +150,7 @@ def show_list(user, args):
 
 
 def help(user, args):
-    return u'我现在支持四种指令哟，预约，取消预约，查询，预约列表，帮助，' \
-           u'用法就是指令名+空格+参数（如果有多本书的话用空格隔开哟），有些指令不需要参数比如帮助和预约列表\n' \
-           u'不同的指令参数也不同哟\n' \
-           u'预约，取消预约，查询需要书的id，' \
-           u'查找需要书的名字和想要的结果数目（没有的话默认是10）\n' \
-           u'举例\n' \
-           u'预约 1241241211\n' \
-           u'查找 机器学习 10\n' \
-           u'记住不要换行哟最后\n' \
-           u'还有一个问题呀，书的id是什么？\n' \
-           u'就是你在图书馆网站上打开一本书的详情页的时候，' \
-           u'例如http://202.114.202.207/opac/item.php?marc_no=0000712031，就是后面的那一串数字' \
-           u'知道了吧'
+    return help_info
 
 
 commands = {
@@ -205,7 +193,7 @@ def has_book(bookid):
     res = get_book_info(bookid)
     return res is not None
 
-
+user_info=book_info=help_info=None
 try:
     f = open('user.json', 'r+')
     user_info = json.loads(f.read())
@@ -213,6 +201,10 @@ try:
     f.close()
     f = open('book.json', 'r+')
     book_info = json.loads(f.read())
+    f.flush()
+    f.close()
+    f = open ('README.md','r')
+    help_info=f.read()
     f.flush()
     f.close()
 except:
