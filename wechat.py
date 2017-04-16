@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import itchat, pprint, psycopg2, re, time, threading
+import itchat, re, time, threading
 import core,json
 """
 user_info = {
