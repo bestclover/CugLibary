@@ -163,31 +163,43 @@ commands = {
 }
 num_re = re.compile('[0-9]{10}')
 
+@itchat.msg_register(itchat.content.FRIENDS)
+def add_friend(msg):
+    msg.user.verify()
+    msg.user.send(help())
+
+@itchat.msg_register(itchat.content.TEXT, isGroupChat=True)
+def group_reply(msg):
+    if msg.isAt:
+        msg.user.send(u'@%s\u2005I received: %s' % (
+            msg.actualNickName, all_reply(msg)))
+
 
 @itchat.msg_register(itchat.content.TEXT)
 def text_reply(msg):
+    msg.user.send(all_reply(msg))
+
+def all_reply(msg):
     user_id = msg.user.alias
     text = msg.text
     args = text.split()
     try:
         if args[0] == u'记得保存信息哟':
             save_info()
-            msg.user.send(u'还用你提醒吗？')
-            return
+            return u'还用你提醒吗？'
     except:
         pass
     if args.__len__() is not 0:
         if args[0] in commands:
             reply = commands[args[0]](user_id, args)
             if type(reply) is unicode:
-                msg.user.send(reply)
+                return reply
             else:
-                msg.user.send('\n'.join(reply))
+                return '\n'.join(reply)
         else:
-            msg.user.send(u'{0} 这是个什么指令呀，我不懂呀'.format(args[0]))
+            return u'{0} 这是个什么指令呀，我不懂呀'.format(args[0])
     else:
-        msg.user.send(u'你输入了什么呀，风太大我看不懂')
-
+        return u'你输入了什么呀，风太大我看不懂'
 
 def has_book(bookid):
     res = get_book_info(bookid)
