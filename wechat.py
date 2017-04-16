@@ -204,7 +204,7 @@ try:
     f.flush()
     f.close()
     f = open ('README.md','r')
-    help_info=f.read()
+    help_info=f.read().decode('utf-8')
     f.flush()
     f.close()
 except:
