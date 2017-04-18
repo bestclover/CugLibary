@@ -43,7 +43,9 @@ def remove_book(book_id):
     print 'book', book_id, 'yeah'
     for user in book_info[book_id]['user']:
         user_info[user].remove(book_id)
-        k = itchat.search_friends(userName=user)
+        k = itchat.search_friends(wechatAccount=user)
+        if type(k) is list:
+            k=k[0]
         k.send(u'您预约的 %s-%s 这本书已经可以借了哟，快去借吧，已经帮您自动取消了预约哟' %
                (book_id, book_info[book_id]['info']['title']))
     book_info[book_id]['user'] = []
@@ -118,7 +120,7 @@ def get_book_info(user, args):
             if book is None:
                 return u'骗人的，没有这本书'
         book = book_info[book_id]['info']
-        return [book['all_info'], u'可借' if book['leave'] > 0 else u'不可借']
+        return [book['all_info'], u'可借' if book['can'] > 0 else u'不可借']
     return u'请给我书的id好吗'
 
 
@@ -173,7 +175,8 @@ def add_friend(msg):
 @itchat.msg_register(itchat.content.TEXT, isGroupChat=True)
 def group_reply(msg):
     if msg.isAt:
-        user_id = itchat.search_friends(userName=msg.actualUserName).alias
+        print msg
+        user_id = itchat.search_friends(userName=msg.ActualNickName).alias
         text = msg.text
         args = text.split()
         msg.user.send(u'@%s\n%s' % (
@@ -183,12 +186,18 @@ def group_reply(msg):
 @itchat.msg_register(itchat.content.TEXT)
 def text_reply(msg):
     user_id = msg.user.alias
+    print msg
+    print msg.fromUserName
+    print msg.self.username
     text = msg.text
     args = text.split()
+    print msg
+    print args
     msg.user.send(all_reply(user_id, args))
 
 
 def all_reply(user_id, args):
+    print user_id,args
     try:
         if args[0] == u'记得保存信息哟':
             save_info()
